@@ -12,7 +12,6 @@
 #include <assert.h>
 
 namespace bmp {
-
 	// wrapper for BMP header
 	#pragma pack(2)
 	class Header {
@@ -46,11 +45,17 @@ namespace bmp {
 	};
 	#pragma pack()
 
-	class Image {
+	class Image { public:
+		//
+		//  +-----------> (x) (width)
+		//  |
+		//  |   Axes defined in this way
+		//  |
+		// (y)
+		// (height)
+		//
 		Header header;
 		unsigned char*** pixels;
-		// unsigned char* extra;
-		// unsigned char* footer;
 
 	public:
 		Image() {}
@@ -60,7 +65,7 @@ namespace bmp {
 		* Input:
 		*	filename:	name of the image file (including .bmp extension)
 		*/
-		Image(const std::string& filename);
+		Image(const std::string&);
 
 		/**
 		* Deallocating resouces used up by bmp::Image object
@@ -72,9 +77,34 @@ namespace bmp {
 		* Input:
 		*	filename:	name of the bmp file (including .bmp extension)
 		*/
-		void save(const std::string& filename);
+		void save(const std::string&);
 
+		/**
+		* Converting a bmp::Image from RGB to GrayScale
+		*/
 		Image toGrayScale();
+
+		/**
+		* Constructs a rotated version of bmp::Image object
+		* Input:
+		*	degrees:	degrees to rotate (anti-clockwise)
+		*/
+		Image rotate(double);
+
+		/**
+		* Constructs a scaled version of bmp::Image object
+		* Input:
+		*	xscale:	scale along width
+		*	yscale:	scale along height
+		*/
+		Image scale(double=1.0, double=1.0);
+
+		/**
+		* Constructs a new bmp::Image object by resetting one of the three channel
+		* Input:
+		*	chid:	'R' / 'G' / 'B'
+		*/
+		Image resetChannel(char);
 	};
 
 	/**
@@ -84,7 +114,7 @@ namespace bmp {
 	* Output:
 	*	a bmp::Image object
 	*/
-	Image read(const std::string& filename);
+	Image read(const std::string&);
 
 	/**
 	* Writing bmp::Image object to a bmp file
@@ -92,8 +122,8 @@ namespace bmp {
 	*	filename:	name of the bmp file (including .bmp extension)
 	*	image:		bmp::Image object
 	*/
-	void write(const std::string& filename, Image& image);
+	void write(const std::string&, Image&);
 } // bmp 
 
-std::ostream& operator<<(std::ostream& os, const bmp::Header& header);
+std::ostream& operator<<(std::ostream&, const bmp::Header&);
 
