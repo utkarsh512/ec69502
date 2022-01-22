@@ -1,2 +1,2 @@
 # image-proc
-Codes used in Image Processing Lab
+C++ libraries for low-level Image Processing
