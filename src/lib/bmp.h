@@ -45,7 +45,7 @@ namespace bmp {
 	};
 	#pragma pack()
 
-	class Image { public:
+	class Image {
 		//
 		//  +-----------> (x) (width)
 		//  |
