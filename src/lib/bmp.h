@@ -45,7 +45,7 @@ namespace bmp {
 	};
 	#pragma pack()
 
-	class Image {
+	class Image { public:
 		//
 		//  +-----------> (x) (width)
 		//  |
@@ -65,7 +65,7 @@ namespace bmp {
 		* Input:
 		*	filename:	name of the image file (including .bmp extension)
 		*/
-		Image(const std::string&);
+		Image(const char *);
 
 		/**
 		* Deallocating resouces used up by bmp::Image object
@@ -77,12 +77,17 @@ namespace bmp {
 		* Input:
 		*	filename:	name of the bmp file (including .bmp extension)
 		*/
-		void save(const std::string&);
+		void save(const char *);
 
 		/**
 		* Converting a bmp::Image from RGB to GrayScale
 		*/
 		Image toGrayScale();
+
+		/**
+		* Constructs a diagonally-flipped version of bmp::Image object
+		*/
+		Image flip();
 
 		/**
 		* Constructs a rotated version of bmp::Image object
@@ -114,7 +119,7 @@ namespace bmp {
 	* Output:
 	*	a bmp::Image object
 	*/
-	Image read(const std::string&);
+	Image read(const char *);
 
 	/**
 	* Writing bmp::Image object to a bmp file
@@ -122,7 +127,7 @@ namespace bmp {
 	*	filename:	name of the bmp file (including .bmp extension)
 	*	image:		bmp::Image object
 	*/
-	void write(const std::string&, Image&);
+	void write(const char *, Image&);
 } // bmp 
 
 std::ostream& operator<<(std::ostream&, const bmp::Header&);
