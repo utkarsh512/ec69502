@@ -30,9 +30,9 @@ std::ostream& operator<<(std::ostream& os, const bmp::Header& h) {
 * Input:
 *	filename:	name of the image file (including .bmp extension)
 */
-bmp::Image::Image(const std::string& filename) {
+bmp::Image::Image(const char *filename) {
 	FILE* f;
-	fopen_s(&f, filename.c_str(), "rb");
+	fopen_s(&f, filename, "rb");
 	if (!f) {
 		throw std::runtime_error("File doesn\'t exists!");
 	}
@@ -92,9 +92,9 @@ bmp::Image::~Image() {
 * Input:
 *	filename:	name of the bmp file (including .bmp extension)
 */
-void bmp::Image::save(const std::string& filename) {
+void bmp::Image::save(const char *filename) {
 	FILE* f;
-	fopen_s(&f, filename.c_str(), "wb");
+	fopen_s(&f, filename, "wb");
 	if (!f) {
 		throw std::runtime_error("Cannot create this file!");
 	}
@@ -155,13 +155,34 @@ bmp::Image bmp::Image::toGrayScale() {
 }
 
 /**
+* Constructs a diagonally-flipped version of bmp::Image object
+*/
+bmp::Image bmp::Image::flip() {
+	bmp::Image image;
+	int channel = header.bpp / 8;
+	image.header = header;
+	std::swap(image.header.width, image.header.height);
+	image.pixels = new unsigned char** [channel];
+	for (int k = 0; k < channel; k++) {
+		image.pixels[k] = new unsigned char* [image.header.height];
+		for (int i = 0; i < image.header.height; i++) {
+			image.pixels[k][i] = new unsigned char[image.header.width];
+			for (int j = 0; j < image.header.width; j++) {
+				image.pixels[k][i][j] = pixels[k][header.height - j - 1][header.width - i - 1];
+			}
+		}
+	}
+	return image;
+}
+
+/**
 * Constructs a rotated version of bmp::Image object
 * Input:
 *	degrees:	degrees to rotate (anti-clockwise)
 */
 bmp::Image bmp::Image::rotate(double degrees) {
 	bmp::Image image;
-	
+
 	// convert degrees into radians
 	double radians = (degrees * 2 * acos(-1.0)) / 360;
 	double sine = sin(radians);
@@ -202,7 +223,7 @@ bmp::Image bmp::Image::rotate(double degrees) {
 				int srcX = static_cast<int>((xx + minX) * cosine + (yy + minY) * sine);
 				int srcY = static_cast<int>((yy + minY) * cosine - (xx + minX) * sine);
 				if (srcX >= 0 && srcX < header.width && srcY >= 0 && srcY < header.height) {
-					image.pixels[k][y][x] = pixels[k][srcY][srcX];	
+					image.pixels[k][y][x] = pixels[k][srcY][srcX];
 				}
 			}
 		}
@@ -286,7 +307,7 @@ bmp::Image bmp::Image::resetChannel(char chid) {
 * Output:
 *	a bmp::Image object
 */
-bmp::Image bmp::read(const std::string& filename) {
+bmp::Image bmp::read(const char *filename) {
 	return bmp::Image(filename);
 }
 
@@ -296,6 +317,6 @@ bmp::Image bmp::read(const std::string& filename) {
 *	filename:	name of the bmp file (including .bmp extension)
 *	image:		bmp::Image object
 */
-void bmp::write(const std::string& filename, bmp::Image& image) {
+void bmp::write(const char *filename, bmp::Image& image) {
 	image.save(filename);
 }
