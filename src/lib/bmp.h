@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <cstring>
 #include <cstdint>
