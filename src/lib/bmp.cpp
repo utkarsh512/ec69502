@@ -26,7 +26,11 @@ std::ostream& operator<<(std::ostream& os, const bmp::Header& h) {
 }
 
 bmp::Image::Image() {
-	memset(colorTable, 0, sizeof(colorTable));
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j < 3; j++)
+			colorTable[4 * i + j] = i;
+		colorTable[4 * i + 3] = 0;
+	}
 }
 
 /**
@@ -35,6 +39,7 @@ bmp::Image::Image() {
 *	filename:	name of the image file (including .bmp extension)
 */
 bmp::Image::Image(const char *filename) {
+	Image();
 	FILE* f;
 	fopen_s(&f, filename, "rb");
 	if (!f) {
@@ -107,7 +112,7 @@ void bmp::Image::save(const char *filename) {
 	int channel = header.bpp / 8;
 
 	// writing color table if it exists
-	fwrite(&colorTable, sizeof(unsigned char), header.numColor * 4, f);
+	fwrite(&colorTable, sizeof(unsigned char), sizeof(colorTable), f);
 
 	// writing pixel data
 	int paddingSize = header.width * channel;
