@@ -25,6 +25,10 @@ std::ostream& operator<<(std::ostream& os, const bmp::Header& h) {
 	return os;
 }
 
+bmp::Image::Image() {
+	memset(colorTable, 0, sizeof(colorTable));
+}
+
 /**
 * Constructing bmp::Image object by reading from a .bmp file
 * Input:
@@ -44,11 +48,10 @@ bmp::Image::Image(const char *filename) {
 	// number of channels
 	int channel = header.bpp / 8;
 
-	int iter = (header.offset - sizeof(bmp::Header)) / sizeof(unsigned char);
-	int tmp;
-	for (int i = 0; i < iter; i++) {
-		fread(&tmp, sizeof(unsigned char), sizeof(unsigned char), f);
-	}
+	// checking if color table is present or not
+	uint32_t palletSize = (header.offset - sizeof(bmp::Header)) / sizeof(unsigned char);
+	fread(&colorTable, sizeof(unsigned char), palletSize, f);
+
 
 	// reading pixel data
 	pixels = new unsigned char** [channel];
@@ -103,14 +106,8 @@ void bmp::Image::save(const char *filename) {
 	fwrite(&header, sizeof(unsigned char), sizeof(bmp::Header), f);
 	int channel = header.bpp / 8;
 
-	// writing extra data to the file
-	//	Writing extra data (that lies between end of headr and offset) to the file
-	int k = 0;
-	for (int i = 0; i < 256; i++) {
-		for (int j = 0; j < 3; j++)
-			fwrite(&i, sizeof(unsigned char), sizeof(unsigned char), f);
-		fwrite(&k, sizeof(unsigned char), sizeof(unsigned char), f);
-	}
+	// writing color table if it exists
+	fwrite(&colorTable, sizeof(unsigned char), header.numColor * 4, f);
 
 	// writing pixel data
 	int paddingSize = header.width * channel;
@@ -287,16 +284,42 @@ bmp::Image bmp::Image::resetChannel(char chid) {
 	else if (chid == 'B') ch = 2;
 	else throw std::runtime_error("Bad chid passed for resetChannel!");
 
-	image.pixels = new unsigned char** [channel];
-	for (int k = 0; k < channel; k++) {
-		image.pixels[k] = new unsigned char* [header.height];
-		for (int i = 0; i < header.height; i++) {
-			image.pixels[k][i] = new unsigned char[header.width];
-			for (int j = 0; j < header.width; j++) {
-				image.pixels[k][i][j] = (k != ch) ? pixels[k][i][j] : 0;
+	// check if the image is an 24bpp RGB image
+	if (channel == 3) {
+		image.pixels = new unsigned char** [channel];
+		for (int k = 0; k < channel; k++) {
+			image.pixels[k] = new unsigned char* [header.height];
+			for (int i = 0; i < header.height; i++) {
+				image.pixels[k][i] = new unsigned char[header.width];
+				for (int j = 0; j < header.width; j++) {
+					image.pixels[k][i][j] = (k != ch) ? pixels[k][i][j] : 0;
+				}
 			}
 		}
 	}
+	// check if the image is 8bpp image with a color table
+	else if (channel == 1 && header.numColor != 0) {
+		// for 8bpp images, the order is blue-green-red
+		ch = 2 - ch;
+		for (int i = 0; i < header.numColor; i++) {
+			for (int j = 0; j < 3; j++) {
+				image.colorTable[i * 4 + j] = (j != ch) ? colorTable[i * 4 + j] : 0;
+			}
+		}
+
+		// deepcopy the pixel values
+		image.pixels = new unsigned char** [channel];
+		for (int k = 0; k < channel; k++) {
+			image.pixels[k] = new unsigned char* [header.height];
+			for (int i = 0; i < header.height; i++) {
+				image.pixels[k][i] = new unsigned char[header.width];
+				for (int j = 0; j < header.width; j++) {
+					image.pixels[k][i][j] = pixels[k][i][j];
+				}
+			}
+		}
+	}
+	else throw std::runtime_error("Cannot reset specified channel!");
 	return image;
 }
 
@@ -307,7 +330,7 @@ bmp::Image bmp::Image::resetChannel(char chid) {
 * Output:
 *	a bmp::Image object
 */
-bmp::Image bmp::read(const char *filename) {
+bmp::Image bmp::read(const char * filename) {
 	return bmp::Image(filename);
 }
 
