@@ -12,7 +12,7 @@
 
 namespace bmp {
 	// wrapper for BMP header
-	#pragma pack(2)
+#pragma pack(2)
 	class Header {
 	public:
 		// file header
@@ -42,7 +42,7 @@ namespace bmp {
 		*	header:	bmp::Header object
 		*/
 	};
-	#pragma pack()
+#pragma pack()
 
 	class Image {
 		//
@@ -55,16 +55,17 @@ namespace bmp {
 		//
 		Header header;
 		unsigned char*** pixels;
+		unsigned char colorTable[1024];
 
 	public:
-		Image() {}
+		Image();
 
 		/**
 		* Constructing bmp::Image object by reading from a .bmp file
 		* Input:
 		*	filename:	name of the image file (including .bmp extension)
 		*/
-		Image(const char *);
+		Image(const char*);
 
 		/**
 		* Deallocating resouces used up by bmp::Image object
@@ -76,7 +77,7 @@ namespace bmp {
 		* Input:
 		*	filename:	name of the bmp file (including .bmp extension)
 		*/
-		void save(const char *);
+		void save(const char*);
 
 		/**
 		* Converting a bmp::Image from RGB to GrayScale
@@ -101,7 +102,7 @@ namespace bmp {
 		*	xscale:	scale along width
 		*	yscale:	scale along height
 		*/
-		Image scale(double=1.0, double=1.0);
+		Image scale(double = 1.0, double = 1.0);
 
 		/**
 		* Constructs a new bmp::Image object by resetting one of the three channel
@@ -118,7 +119,7 @@ namespace bmp {
 	* Output:
 	*	a bmp::Image object
 	*/
-	Image read(const char *);
+	Image read(const char*);
 
 	/**
 	* Writing bmp::Image object to a bmp file
@@ -126,7 +127,7 @@ namespace bmp {
 	*	filename:	name of the bmp file (including .bmp extension)
 	*	image:		bmp::Image object
 	*/
-	void write(const char *, Image&);
+	void write(const char*, Image&);
 } // bmp 
 
 std::ostream& operator<<(std::ostream&, const bmp::Header&);
