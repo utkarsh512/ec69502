@@ -39,7 +39,6 @@ bmp::Image::Image() {
 *	filename:	name of the image file (including .bmp extension)
 */
 bmp::Image::Image(const char *filename) {
-	Image();
 	FILE* f;
 	fopen_s(&f, filename, "rb");
 	if (!f) {
@@ -52,6 +51,12 @@ bmp::Image::Image(const char *filename) {
 
 	// number of channels
 	int channel = header.bpp / 8;
+
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j < 3; j++)
+			colorTable[4 * i + j] = i;
+		colorTable[4 * i + 3] = 0;
+	}
 
 	// checking if color table is present or not
 	uint32_t palletSize = (header.offset - sizeof(bmp::Header)) / sizeof(unsigned char);
